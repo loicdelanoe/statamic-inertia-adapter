@@ -60,8 +60,12 @@ class SharedData
 
         $sites = Site::all();
 
+        if (method_exists($page, 'entry')) {
+            $page = $page->entry();
+        }
+
         $sitesWithUrls = $sites->map(function ($site) use ($page) {
-            $entry = $page->entry()->in($site->handle());
+            $entry = $page->in($site->handle());
 
             $siteArray = $site->toArray();
 
