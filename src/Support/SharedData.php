@@ -12,14 +12,13 @@ class SharedData
     public static function all(): array
     {
         return array_merge([
-            'csrf' => fn () => self::csrf(),
             'navigations' => fn () => self::navigations(),
             'globals' => fn () => self::globals(),
-            'old' => fn () => self::old(),
+            'sites' => fn () => self::sitesWithLocalizedUrls(),
         ]);
     }
 
-    protected static function navigations(): array
+    private static function navigations(): array
     {
         return Nav::all()->mapWithKeys(function ($nav) {
             $tree = $nav->trees()->get(Site::current()->handle())->tree();
@@ -42,7 +41,7 @@ class SharedData
         })->toArray();
     }
 
-    protected static function globals(): array
+    private static function globals(): array
     {
         $globals = [];
 
@@ -55,17 +54,22 @@ class SharedData
         return $globals;
     }
 
-    protected static function old(): array
+    private static function sitesWithLocalizedUrls(): array
     {
-        return session()->getOldInput();
-    }
+        $page = request()->attributes->get('page');
 
-    protected static function csrf(): string
-    {
-        if (! app()->bound('session')) {
-            return '';
-        }
+        $sites = Site::all();
 
-        return csrf_token() ?? '';
+        $sitesWithUrls = $sites->map(function ($site) use ($page) {
+            $entry = $page->entry()->in($site->handle());
+
+            $siteArray = $site->toArray();
+
+            $siteArray['related_page'] = $entry->url();
+
+            return $siteArray;
+        })->toArray();
+
+        return $sitesWithUrls;
     }
 }
