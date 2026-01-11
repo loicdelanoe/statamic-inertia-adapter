@@ -2,6 +2,10 @@
 
 All notable changes to `inertia-statamic` will be documented in this file.
 
+## v0.0.2 - 2026-01-11
+
+**Full Changelog**: https://github.com/loicdelanoe/statamic-inertia-adapter/compare/v0.0.1...v0.0.2
+
 ## v0.0.093 - 2026-01-07
 
 **Full Changelog**: https://github.com/loicdelanoe/inertia-statamic/compare/v0.0.92...v0.0.093
