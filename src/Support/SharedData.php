@@ -14,8 +14,9 @@ class SharedData
         return array_merge([
             'navigations' => fn () => self::navigations(),
             'globals' => fn () => self::globals(),
+        ], config('statamic.system.multisite') ? [
             'sites' => fn () => self::sitesWithLocalizedUrls(),
-        ]);
+        ] : []);
     }
 
     private static function navigations(): array
@@ -69,7 +70,7 @@ class SharedData
 
             $siteArray = $site->toArray();
 
-            $siteArray['related_page'] = $entry->url();
+            $siteArray['related_page'] = $entry?->url();
 
             return $siteArray;
         })->toArray();
