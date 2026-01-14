@@ -21,7 +21,7 @@ class StatamicInertiaAdapter
      * determines if the request should be skipped, and returns an Inertia
      * response rendering the page with its augmented data and layout.
      */
-    public function handle(Request $request, Closure $next): \Inertia\Response|Closure
+    public function handle(Request $request, Closure $next)
     {
         $page = $this->resolvePage($request);
 
