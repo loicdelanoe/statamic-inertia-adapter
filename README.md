@@ -16,7 +16,7 @@ composer require loicdelanoe/statamic-inertia-adapter
 
 After that, you will need to set up Inertia.js. For guidance, follow the [official documentation](https://inertiajs.com/installation).
 
-If you prefer a ready-to-go setup, you can use the [Statamic Inertia.js starter kit](https://github.com/loicdelanoe/statamic-inertia-starter-kit). Currently, it only supports Vue.js, but it should be easy to adapt for React or Svelte.
+If you prefer a ready-to-go setup, you can use the [Statamic Inertia.js starter kit](https://github.com/loicdelanoe/statamic-inertia-starter). Currently, it only supports Vue.js, but it should be easy to adapt for React or Svelte.
 
 # Usage
 
