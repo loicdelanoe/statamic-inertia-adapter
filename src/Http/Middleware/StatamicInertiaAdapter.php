@@ -60,11 +60,14 @@ class StatamicInertiaAdapter
      */
     private function renderPage(Entry|Page $page): \Inertia\Response
     {
+        $template = Str::studly($page->template());
+        $layout = Str::studly($page->layout());
+
         return Inertia::render(
-            Str::studly($page->template()),
+            $template,
             [
                 'data' => $page->toAugmentedArray(),
-                'layout' => Str::studly($page->layout()),
+                'layout' => $layout,
             ]
         );
     }
