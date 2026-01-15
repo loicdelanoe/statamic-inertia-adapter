@@ -4,7 +4,7 @@
 
 # Introduction
 
-This adapter allows you to use Inertia.js with Statamic.
+This adapter allows you to use Inertia.js with Statamic. For more information on Statamic’s features and how they work, please refer to the official documentation: [https://statamic.dev](https://statamic.dev)
 
 # Installation
 
