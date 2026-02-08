@@ -2,6 +2,7 @@
 
 namespace StatamicInertiaAdapter\StatamicInertiaAdapter\Support;
 
+use Inertia\Inertia;
 use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
 use Statamic\Facades\Nav;
@@ -12,10 +13,10 @@ class SharedData
     public static function all(): array
     {
         return array_merge([
-            'navigations' => fn () => self::navigations(),
-            'globals' => fn () => self::globals(),
+            'navigations' => Inertia::once(fn () => self::navigations()),
+            'globals' => Inertia::once(fn () => self::globals()),
         ], config('statamic.system.multisite') ? [
-            'sites' => fn () => self::sitesWithLocalizedUrls(),
+            'sites' => Inertia::once(fn () => self::sitesWithLocalizedUrls()),
         ] : []);
     }
 
@@ -58,6 +59,10 @@ class SharedData
     private static function sitesWithLocalizedUrls(): array
     {
         $page = request()->attributes->get('page');
+
+        if (! $page) {
+            return [];
+        }
 
         $sites = Site::all();
 

@@ -10,7 +10,10 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Statamic\Entries\Entry;
 use Statamic\Facades\Data;
+use Statamic\Facades\Site;
 use Statamic\Structures\Page;
+use Statamic\Taxonomies\LocalizedTerm;
+use Statamic\Taxonomies\Taxonomy;
 
 class StatamicInertiaAdapter
 {
@@ -30,10 +33,11 @@ class StatamicInertiaAdapter
         }
 
         // Attach the page to the request for later use in shared data, avoiding unnecessary database queries.
-        $request->attributes->set('page', $page);
+        if ($page instanceof Page || $page instanceof Entry) {
+            $request->attributes->set('page', $page);
+        }
 
         return $this->renderPage($page);
-
     }
 
     /**
@@ -42,7 +46,7 @@ class StatamicInertiaAdapter
      * If a live preview token is present, return the live preview item.
      * Otherwise, resolve the page by the request URL.
      */
-    private function resolvePage(Request $request): Entry|Page|null
+    private function resolvePage(Request $request): Entry|Page|Taxonomy|LocalizedTerm|null
     {
         if ($token = $request->statamicToken()) {
             return LivePreview::item($token);
@@ -58,18 +62,25 @@ class StatamicInertiaAdapter
      * corresponding Inertia component. Uses the page's template and layout
      * names converted to StudlyCase.
      */
-    private function renderPage(Entry|Page $page): \Inertia\Response
+    private function renderPage(Entry|Taxonomy|LocalizedTerm|Page $page): \Inertia\Response
     {
-        $template = Str::studly($page->template());
-        $layout = Str::studly($page->layout());
+        $template = $this->formatTemplate($page->template());
 
-        return Inertia::render(
-            $template,
-            [
-                'data' => $page->toAugmentedArray(),
-                'layout' => $layout,
-            ]
-        );
+        $data = ['layout' => Str::studly($page->layout())];
+
+        if ($page instanceof Taxonomy) {
+            $terms = $page->queryTerms()->where('site', Site::current())->get();
+
+            $data['terms'] = $terms;
+        }
+
+        if ($page instanceof Page || $page instanceof Entry) {
+            $data['data'] = $page->toAugmentedArray();
+        } else {
+            $data['data'] = $page;
+        }
+
+        return Inertia::render($template, $data);
     }
 
     /**
@@ -79,7 +90,7 @@ class StatamicInertiaAdapter
      */
     private function isInvalidPage(mixed $page): bool
     {
-        return ! ($page instanceof Page || $page instanceof Entry);
+        return ! ($page instanceof Page || $page instanceof Entry || $page instanceof Taxonomy || $page instanceof LocalizedTerm);
     }
 
     /**
@@ -88,9 +99,13 @@ class StatamicInertiaAdapter
      * A user is unauthorized if the page is not published and the user is
      * not authenticated.
      */
-    private function isUnauthorized(Entry|Page|null $page): bool
+    private function isUnauthorized(Entry|Page|Taxonomy|LocalizedTerm|null $page): bool
     {
-        return ! $page->published() && ! Auth::check();
+        if ($page instanceof Page) {
+            return ! $page->published() && ! Auth::check();
+        }
+
+        return false;
     }
 
     /**
@@ -98,8 +113,16 @@ class StatamicInertiaAdapter
      *
      * Skips the request if the page is invalid or the user is unauthorized.
      */
-    private function shouldSkipRequest(Entry|Page|null $page): bool
+    private function shouldSkipRequest(Entry|Page|Taxonomy|LocalizedTerm|null $page): bool
     {
         return $this->isInvalidPage($page) || $this->isUnauthorized($page);
+    }
+
+    private function formatTemplate(string $template)
+    {
+        return Str::of($template)
+            ->explode('.')
+            ->map(fn ($part) => Str::studly($part))
+            ->implode('/');
     }
 }
