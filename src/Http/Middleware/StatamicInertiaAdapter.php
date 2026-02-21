@@ -64,7 +64,7 @@ class StatamicInertiaAdapter
      */
     private function renderPage(Entry|Taxonomy|LocalizedTerm|Page $page): \Inertia\Response
     {
-        $template = $this->formatTemplate($page->template());
+        $template = $this->formatTemplate($page->template(), $page);
 
         $data = ['layout' => Str::studly($page->layout())];
 
@@ -118,11 +118,18 @@ class StatamicInertiaAdapter
         return $this->isInvalidPage($page) || $this->isUnauthorized($page);
     }
 
-    private function formatTemplate(string $template)
+    private function formatTemplate(string $template, Entry|Page|Taxonomy|LocalizedTerm $page)
     {
+        if ($page instanceof Taxonomy || $page instanceof LocalizedTerm) {
+            return Str::of($template)
+                ->explode('.')
+                ->map(fn ($part) => Str::studly($part))
+                ->implode('/');
+        }
+
         return Str::of($template)
-            ->explode('.')
-            ->map(fn ($part) => Str::studly($part))
-            ->implode('/');
+            ->afterLast('.')
+            ->studly()
+            ->value();
     }
 }
